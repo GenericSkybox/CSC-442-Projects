@@ -8,6 +8,7 @@
 # library used for reading standard input
 import sys
 
+# START #
 # grab the data from the file and determine the length of the binary number
 data = sys.stdin.read()
 datalen = len(data)
