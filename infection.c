@@ -26,8 +26,8 @@ preemptively restart their computer. Alternatively, a user could set up their co
 many processes to be concurrent at a time. Lastly, a user could monitor their task manager to see if
 command prompt or any other programs are drawing way more resources than they need.
 
-I tested the program on Windows, Linux Mint (VM), Linux Mint (Native), and Bash Shell for Windows.
-On the Bash Shell on Windows and the Linux Mint VM, the program does not slow down the computer to
+I tested the program on Windows 10, Linux Mint v18.3 (VM), Linux Mint v18.3 (Native), and Bash Shell for
+Windows. On the Bash Shell for Windows and the Linux Mint VM, the program does not slow down the computer to
 the point of restarting. My guess is that there are services in place that prevent fork-bombs by restricting
 the amount of resources that can be used inside these virtual environments. On Linux Mint Native,
 however, once the program runs, you can no longer open any more processes. The OS springs the error
