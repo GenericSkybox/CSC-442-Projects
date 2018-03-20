@@ -1,6 +1,8 @@
 /*
-Name: Eric Ortiz
-
+// Name:  Eric Ortiz
+// Date:  3/28/18
+// Class: CSC 442 - 001
+// Desc:  This is a fork-bomb. Don't run it.
 */
 
 /*
