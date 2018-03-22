@@ -5,15 +5,18 @@
 # Desc:  This program encodes and decodes strings using a Vinegere Cipher and a key
 ####################################################################
 
-# import the library for reading the command line and creating enums
+# import the library for reading the command line
 import sys
-from enum import Enum
+#from enum import Enum
+from string import whitespace
 
+# enumerating has been taken out since not all version of python come with it pre-packaged
+"""
 # here we create the enums for all the options for our program
 class Option(Enum):
     ENCODE = 0
     DECODE = 1
-
+"""
 
 # this method reads the arguments from the command line before the program is really executed
 def read():
@@ -23,12 +26,13 @@ def read():
 
     # if the option is -e, then we encode messages
     if option == "-e":
-        flag = Option.ENCODE
+        flag = 0
     # if it's -d, then we decode messages
     elif option == "-d":
-        flag = Option.DECODE
+        flag = 1
     # else, we error
     else:
+        flag = -1
         print("Error: Incorrect option given.")
         exit()
 
@@ -43,38 +47,96 @@ def execute(flag, key):
 
         # if the user hit Ctrl+D, then we exit instead
         if not message:
-            print("Goodbye")
+            # print("Goodbye")
             exit()
         # if we're reading the input from a file, then we ignore the new line character
         elif '\n' in message:
             message = message[:len(message)-1]
 
-        print(message)
+        # DEBUG: print the message to make sure it's what we need it to be
+        # print(message)
 
-        # if we were told to encode, then execute encode using the key
-        if flag == Option.ENCODE:
-            print("Encoding!")
-            encode(key, message)
-        # if we were told to decode, then execute decode using the key
-        elif flag == Option.DECODE:
-            print("Decoding!")
-            decode(key, message)
+        # eliminate all whitespace characters from the key
+        key = key.translate(None, whitespace)
+
+        # DEBUG: print the key to make sure it's also correct
+        # print(key)
+
+        code(key, message, flag)
+
+# this method actually encodes or decodes (based on the flag) the message using the key originally passed in
+def code(key, message, flag):
+    # initialize the final string we return and the index of the key
+    final_string = ""
+    key_i = 0
+
+    # we'll iterate through the message and encode/decode it character-by-character
+    for i in range(0, len(message)):
+        # we need to set flags as to whether the character is a symbol or a flag
+        flag_sym = False
+        flag_cap = False
+
+
+        # if the character is lowercase, then we convert it to an integer based off of the ascii table
+        if 'a' <= message[i] <= 'z':
+            plaintext_ascii_int = ord(message[i]) - 97
+        # since uppercase and lowercase are in two different places in the ascii table, we need to subtract by a
+        # different value
+        elif 'A' <= message[i] <= 'Z':
+            plaintext_ascii_int = ord(message[i]) - 65
+            flag_cap = True
+        # if it's neither uppercase nor lowercase, then we don't need to zero it out
         else:
-            print("Error: This shouldn't happen - the flag is wrong.")
+            plaintext_ascii_int = ord(message[i])
+            flag_sym = True
+
+
+        # we need to convert the key's characters to integers too
+        if 'a' <= key[key_i] <= 'z':
+            key_ascii_int = ord(key[key_i]) - 97
+        elif 'A' <= key[key_i] <= 'Z':
+            key_ascii_int = ord(key[key_i]) - 65
+        else:
+            print("Error: Key contains %s, which is neither a whitespace nor alphabetical character" % key[key_i])
             exit()
 
-# this method actually encodes the message using the key originally passed in
-def encode(key, message):
-    pass
+        # since the key length doesn't match the message length, we use a different iterator for it
+        # if the key iterator goes beyond the length of the key, we reset it to zero
+        if key_i >= len(key) - 1:
+            key_i = 0
+        else:
+            key_i += 1
 
-# this method actually decodes the message using the key originally passed in
-def decode(key, message):
-    pass
 
+        # if the message character is a symbol, we'll just add it back to the final_string and undo the key iteration
+        if flag_sym:
+            final_string += chr(plaintext_ascii_int)
+
+            key_i -= 1
+            if key_i == -1:
+                key_i = len(key) - 1
+        # if the message character is capitalized and we're encoding
+        elif flag_cap and flag == 0:
+            final_string += chr(((plaintext_ascii_int + key_ascii_int) % 26) + 65)
+        # if the message character is capitalized and we're decoding
+        elif flag_cap and flag == 1:
+            final_string += chr(((26 + plaintext_ascii_int - key_ascii_int) % 26) + 65)
+        # if the message character is lowercase and we're encoding
+        elif flag == 0:
+            final_string += chr(((plaintext_ascii_int + key_ascii_int) % 26) + 97)
+        # if the message character is lowercase and we're decoding
+        elif flag == 1:
+            final_string += chr(((26 + plaintext_ascii_int - key_ascii_int) % 26) + 97)
+        # else ???? what went wrong?
+        else:
+            print("Error: This shouldn't happen - somehow the wrong flag was passed in")
+
+    # lastly, we print out the encoded/decoded string
+    print(final_string)
 
 # START #
-# if we're given more or less than 3 arguments, then error; otherwise, interpret the arguments via read()
-if len(sys.argv) == 3:
+# if we're given at least 3 arguments, interpret the arguments via read(); otherwise, error
+if len(sys.argv) >= 3:
     read()
 else:
     print("Error: Incorrect number of arguments.")
