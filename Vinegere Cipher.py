@@ -62,6 +62,7 @@ def execute(flag, key):
         # DEBUG: print the key to make sure it's also correct
         # print(key)
 
+        # finally, we encode/decode the message based on the flag
         code(key, message, flag)
 
 # this method actually encodes or decodes (based on the flag) the message using the key originally passed in
