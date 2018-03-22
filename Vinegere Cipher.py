@@ -45,6 +45,11 @@ def execute(flag, key):
         if not message:
             print("Goodbye")
             exit()
+        # if we're reading the input from a file, then we ignore the new line character
+        elif '\n' in message:
+            message = message[:len(message)-1]
+
+        print(message)
 
         # if we were told to encode, then execute encode using the key
         if flag == Option.ENCODE:
