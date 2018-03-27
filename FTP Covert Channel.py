@@ -5,6 +5,14 @@ ip = "jeangourd.com"
 username = "anonymous"
 password = ""
 folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
+
+file1 = "main.txt"
+file2 = "seven.txt"
+file3 = "ten.txt"
+bin1 = "binary_main.txt"
+bin2 = "binary_seven.txt"
+bin3 = "binary_ten.txt"
+
 directory_1 = "7"
 directory_2 = "10"
 filematch = "*.*"
@@ -13,21 +21,46 @@ data = []
 os.chdir(folder_path)
 ftp = FTP(ip)
 ftp.login(username, password)
-print("File List:")
-#ftp.dir()
 
-#files = ftp.nlst()
+
+print("File List:")
 ftp.dir(data.append)
 
-f = open("file1.txt", "w+")
+f = open(file1, "w+")
 for _file in data:
     print(_file)
     f.write("%s\r\n" % _file)
 
 f.close()
 
-#ftp.cwd(directory_1)
+
+ftp.cwd(directory_1)
+print("File List:")
+ftp.dir(data.append)
+
+f = open(file2, "w+")
+for _file in data:
+    print(_file)
+    f.write("%s\r\n" % _file)
+
+f.close()
+
+
+ftp.cwd("/")
+ftp.cwd(directory_2)
+print("File List:")
+ftp.dir(data.append)
+
+f = open(file3, "w+")
+for _file in data:
+    print(_file)
+    f.write("%s\r\n" % _file)
+
+f.close()
+
 ftp.quit()
+
+
 
 """
 bashCommand = "cd ../.."
