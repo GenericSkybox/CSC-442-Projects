@@ -1,9 +1,33 @@
 import os
-import ftplib
+from ftplib import FTP
 
-ftp = ftplib.FTP("jeangourd.com")
-ftp.login("anonymous", "")
+ip = "jeangourd.com"
+username = "anonymous"
+password = ""
+folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
+directory_1 = "7"
+directory_2 = "10"
+filematch = "*.*"
+data = []
 
+os.chdir(folder_path)
+ftp = FTP(ip)
+ftp.login(username, password)
+print("File List:")
+#ftp.dir()
+
+#files = ftp.nlst()
+ftp.dir(data.append)
+
+f = open("file1.txt", "w+")
+for _file in data:
+    print(_file)
+    f.write("%s\r\n" % _file)
+
+f.close()
+
+#ftp.cwd(directory_1)
+ftp.quit()
 
 """
 bashCommand = "cd ../.."
@@ -20,4 +44,10 @@ os.system(bashCommand3)
 """
 Website references
 https://stackoverflow.com/questions/4256107/running-bash-commands-in-python - os.system(bashCommand)
+https://stackoverflow.com/questions/25793015/change-permissions-via-ftp-in-python
+https://stackoverflow.com/questions/21194691/retrieve-file-s-from-ftp-using-python-connection
+https://askubuntu.com/questions/528411/how-do-you-view-file-permissions
+https://docs.python.org/3/library/ftplib.html
+https://www.guru99.com/reading-and-writing-files-in-python.html
+https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
 """
