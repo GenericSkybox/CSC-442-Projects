@@ -1,6 +1,8 @@
 import os
 from ftplib import FTP
 
+DEBUG = False
+
 ip = "jeangourd.com"
 username = "anonymous"
 password = ""
@@ -18,21 +20,33 @@ directory_2 = "10"
 filematch = "*.*"
 data = []
 
+# START #
+# First we're going to change our folder to a directory to store our files we're going to create
+print("Welcome to Pride's FTP permission decoder")
 os.chdir(folder_path)
+print("Folder navigated")
 ftp = FTP(ip)
 ftp.login(username, password)
+print("Login successful")
 
+if DEBUG:
+    print("File List:")
 
-print("File List:")
+ftp.cwd(directory_1)
+
 ftp.dir(data.append)
 
 f = open(file1, "w+")
 for _file in data:
-    print(_file)
+    if DEBUG:
+        print(_file)
+
     f.write("%s\r\n" % _file)
 
+print("Permissions saved")
 f.close()
 
+"""
 
 ftp.cwd(directory_1)
 print("File List:")
@@ -57,22 +71,45 @@ for _file in data:
     f.write("%s\r\n" % _file)
 
 f.close()
-
+"""
 ftp.quit()
+print("FTP Server exited")
 
+permissionarray = []
+with open(file1, 'r') as f:
+    for line in f:
+        if not line[0:3] == "---":
+            continue
+        else:
+            permissionarray.append(line[3:10])
 
+f.close()
+print("Storing file permissions only")
 
-"""
-bashCommand = "cd ../.."
-bashCommand1 = "touch file1"
-bashCommand2 = "ls"
-bashCommand3 = "rm file1"
+os.system("rm %s" % file1)
+print("%s cleanup" % file1)
 
-os.system(bashCommand)
-os.system(bashCommand1)
-os.system(bashCommand2)
-os.system(bashCommand3)
-"""
+f = open(bin1, "w+")
+for i in permissionarray:
+    tempbin = ""
+
+    for j in i:
+        if j == '-':
+            tempbin += '0'
+        else:
+            tempbin += '1'
+
+    if DEBUG:
+        print(tempbin)
+
+    f.write(tempbin)
+
+f.close()
+print("Permissions decoded to binary")
+
+os.chdir("../Python/Cyber Storm Assignments")
+os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin1)
+
 
 """
 Website references
@@ -83,4 +120,5 @@ https://askubuntu.com/questions/528411/how-do-you-view-file-permissions
 https://docs.python.org/3/library/ftplib.html
 https://www.guru99.com/reading-and-writing-files-in-python.html
 https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
+https://stackoverflow.com/questions/3277503/how-do-i-read-a-file-line-by-line-into-a-list
 """
