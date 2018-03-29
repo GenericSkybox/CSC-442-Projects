@@ -108,6 +108,22 @@ def storeAndConvert(filename, binname, bintag):
 
         f.write(tempbin)
 
+    if bintag == 10:
+        f.close()
+
+        with open(binname, 'r') as f:
+            oldbinary = f.readline()
+            print("Before cut: %i" % len(oldbinary))
+            bincutoff = len(oldbinary) - (len(oldbinary) % 7)
+            print("Cut off: %i" % bincutoff)
+            newbinary = oldbinary[:bincutoff]
+            print("After cut: %i" % len(newbinary))
+
+        f.close()
+
+        f = open(binname, "w+")
+        f.write(newbinary)
+
     f.close()
     print("Permissions decoded to binary")
 
@@ -137,6 +153,7 @@ storeAndConvert(file1, bin1, 7)
 storeAndConvert(file2, bin2, 7)
 storeAndConvert(file3, bin3, 10)
 
+# Lastly, we're going to move back to where the Binary Decoder is stored and run it on our three binary text files
 os.chdir("../Python/Cyber Storm Assignments")
 os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin1)
 os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin2)
