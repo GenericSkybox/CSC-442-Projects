@@ -10,7 +10,7 @@ ip = "jeangourd.com"
 username = "anonymous"
 password = ""
 # Also initialize where we want to store the binary (on our system) once we grab it from the server
-folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
+folder_path = "/../../mnt/c/Users/erico/Desktop/FTP"
 
 # Here are some file names that we'll use to distinguish between all of the folders we're sifting through on the server
 # File1-3 is for initially storing the permissions, while bin1-3 is for the actual binary
@@ -95,35 +95,57 @@ def storeAndConvert(filename, binname, bintag):
     # Now we're going to open up a new file to store our binary in
     f = open(binname, "w+")
     for i in permissions:
+        # We set up a temporary binary string, which we'll add to and eventually write to the file
         tempbin = ""
 
+        # For every character in each line, we check to see if it's a - or a letter
         for j in i:
             if j == '-':
+                # If it's a dash, then the binary is 0
                 tempbin += '0'
             else:
+                # Otherwise, it's a 1
                 tempbin += '1'
 
+        # Once we're done with each line, we can print out the binary string
         if DEBUG:
             print(tempbin)
 
+        # Lastly, we write the binary string to the file
         f.write(tempbin)
 
+    # If the binary tag is 10, we need to trim off some extra binary bits off of the end of our binary string
     if bintag == 10:
+        # Close the file we were working on and then re-open it as a read only (there's probably an easier way to do
+        # this)
         f.close()
-
         with open(binname, 'r') as f:
+            # We set the oldbinary number to the one line in the text file
             oldbinary = f.readline()
-            print("Before cut: %i" % len(oldbinary))
+
+            if DEBUG:
+                print("Before cut: %i" % len(oldbinary))
+
+            # Then we set up how much we're gonna strip off of the end of the old binary - the binary string needs to be
+            # a multiple of 7
             bincutoff = len(oldbinary) - (len(oldbinary) % 7)
-            print("Cut off: %i" % bincutoff)
+
+            if DEBUG:
+                print("Cut off: %i" % bincutoff)
+
+            # Now we create the new binary string using the old binary string and the cutoff position
             newbinary = oldbinary[:bincutoff]
-            print("After cut: %i" % len(newbinary))
 
+            if DEBUG:
+                print("After cut: %i" % len(newbinary))
+
+        # Now we close the file and re-open it again, but this time we're writing to the file (again, there's probably
+        # an easier way to do this). Then we write the newbinary string to the file, which will overwrite the old one
         f.close()
-
         f = open(binname, "w+")
         f.write(newbinary)
 
+    # Now that we're done, close the file
     f.close()
     print("Permissions decoded to binary")
 
@@ -154,10 +176,10 @@ storeAndConvert(file2, bin2, 7)
 storeAndConvert(file3, bin3, 10)
 
 # Lastly, we're going to move back to where the Binary Decoder is stored and run it on our three binary text files
-os.chdir("../Python/Cyber Storm Assignments")
-os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin1)
-os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin2)
-os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin3)
+os.chdir("../My Programs/Python/Cyber Storm Projects")
+os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin1)
+os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin2)
+os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin3)
 
 """
 Website references

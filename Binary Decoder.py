@@ -27,7 +27,7 @@ charlist = []
 # if the length of the data is a multiple of 7 AND 8, then we cannot determine which bit-type of ASCII its written in
 # therefore, we'll just print both and have the user read it to determine
 if datalen % 8 == 0 and datalen % 7 == 0:
-    print("binary string can be either 7-bit or 8-bit")
+    print("Binary string can be either 7-bit or 8-bit")
 
     # although there's better ways to do it, we just need a loop that continues until the data string is empty
     while True:
@@ -69,7 +69,7 @@ if datalen % 8 == 0 and datalen % 7 == 0:
 
 # if the data string is divisible by only 8, then the characters are 8-bit ASCII
 elif datalen % 8 == 0:
-    print("binary string is 8-bit")
+    print("Binary string is 8-bit")
 
     while True:
         bchar = tempdata[:8]
@@ -87,7 +87,7 @@ elif datalen % 8 == 0:
 
 # if the data string is divisible by only 7, then the characters are 7-bit ASCII
 elif datalen % 7 == 0:
-    print("binary string is 7-bit")
+    print("Binary string is 7-bit")
 
     while True:
         bchar = tempdata[:7]
@@ -105,7 +105,7 @@ elif datalen % 7 == 0:
 
 # otherwise, the string is a combination of both
 else:
-    print("binary string is a combination of 7-bit and 8-bit")
+    print("Binary string is a combination of 7-bit and 8-bit")
     print("Error: multi-bit binary detected")
 
 # lastly, we concatenate all of our characters into one string and print that
