@@ -1,3 +1,12 @@
+###################################################################
+# Name:  Team Pride: Eric Ortiz, Colby Austin, Andy Kraus, Herbert Sanford, Jalen Senones, Stephen Kunz, Tony York
+# Date:  4/6/18
+# Class: CSC 442 - 001
+# Desc:  This program logs into Dr. Gourd's FTP server, grabs his file permissions, translates it to binary, and then
+#        uses our existing Binary Decoder to decode the message. The message is printed to the console while the actual
+#        binary is saved to a file on our system.
+####################################################################
+
 # import os for system commands on our system and ftplib for actually accessing the FTP server
 import os
 from ftplib import FTP
