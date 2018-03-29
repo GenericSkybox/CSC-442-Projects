@@ -1,13 +1,19 @@
+# import os for system commands on our system and ftplib for actually accessing the FTP server
 import os
 from ftplib import FTP
 
+# Debug mode initialized to false
 DEBUG = False
 
+# Initialize the ip address, username, and password for the FTP server
 ip = "jeangourd.com"
 username = "anonymous"
 password = ""
+# Also initialize where we want to store the binary (on our system) once we grab it from the server
 folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
 
+# Here are some file names that we'll use to distinguish between all of the folders we're sifting through on the server
+# File1-3 is for initially storing the permissions, while bin1-3 is for the actual binary
 file1 = "main.txt"
 file2 = "seven.txt"
 file3 = "ten.txt"
@@ -15,101 +21,126 @@ bin1 = "binary_main.txt"
 bin2 = "binary_seven.txt"
 bin3 = "binary_ten.txt"
 
-directory_1 = "7"
-directory_2 = "10"
-filematch = "*.*"
+# These are the directory names on the FTP server where we need to grab the file permissions
+directory_1 = "/"
+directory_2 = "7"
+directory_3 = "10"
+
+# Lastly, we declare an array of data, which is where we'll initially store the file permissions from each directory...
 data = []
+# ... and an array of permissions which we'll grab from each line from a list of files
+permissions = []
+
+# This function is used to grab a list of files from a given directory on the FTP and save it to a file on your system
+def grab(filename, directory):
+    # Before we start, let's reset the data array just in case...
+    data = []
+    # We should probably reset what directory we're in before we move to a different one...
+    ftp.cwd("/")
+
+    # Then we navigate to the directory from which we wanna grab the list of files from, and then we add it to data list
+    ftp.cwd(directory)
+    ftp.dir(data.append)
+
+    # If we're in debug, show that we're about to print the list of files
+    if DEBUG:
+        print("File List:")
+
+    # Now that we have the list of files, we're going to add each string representation of the file we grabbed to a text
+    # file on our system
+
+    # To do this, we're going to write to a new (or existing) file on our system each file in our data array
+    f = open(filename, "w+")
+
+    for _file in data:
+        # If we're in debug, print each file as we save it
+        if DEBUG:
+            print(_file)
+
+        # Also, we can't just add each file string straight up. We need to add some line endings to the end
+        f.write("%s\r\n" % _file)
+
+    # Then we close the file
+    print("List of files saved")
+    f.close()
+
+# This function grabs the list of files that we have saved and stores just the file permissions based on the bintag
+# Once they're stored, we'll go ahead and convert them to binary and save it to binary name file
+def storeAndConvert(filename, binname, bintag):
+    # Before we start, let's reset the permission array just in case...
+    permissions = []
+    # Let's re-open the file where we stored the list of files from the FTP server, but this time we read each line
+    with open(filename, 'r') as f:
+        # So we read each line from the file...
+        for line in f:
+            # ... and if the binary tag is 7, then we ignore files that start don't start with --- in the permissions
+            if bintag == 7:
+                if not line[0:3] == "---":
+                    continue
+                else:
+                    # Also we save just the permissions we care about
+                    permissions.append(line[3:10])
+            # Otherwise, go ahead and add the whole permission line
+            else:
+                permissions.append(line[0:10])
+
+    # Once we're done storing permissions to the permission array, go ahead and close the file we were working in
+    f.close()
+    print("Storing file permissions only")
+
+    # Go ahead and delete that file since we won't need it anymore
+    os.system("rm %s" % filename)
+    print("%s cleanup" % filename)
+
+    # Now we're going to open up a new file to store our binary in
+    f = open(binname, "w+")
+    for i in permissions:
+        tempbin = ""
+
+        for j in i:
+            if j == '-':
+                tempbin += '0'
+            else:
+                tempbin += '1'
+
+        if DEBUG:
+            print(tempbin)
+
+        f.write(tempbin)
+
+    f.close()
+    print("Permissions decoded to binary")
 
 # START #
-# First we're going to change our folder to a directory to store our files we're going to create
 print("Welcome to Pride's FTP permission decoder")
+# First we're going to change our folder to a directory to store our files we're going to create
 os.chdir(folder_path)
 print("Folder navigated")
+# Now we're going to login to the FTP server, using the ip, username, and password previously initialized
 ftp = FTP(ip)
 ftp.login(username, password)
 print("Login successful")
 
-if DEBUG:
-    print("File List:")
+# Now we actually grab the string representation of the list of files from the FTP server. We do this by passing in
+# where we want to store the list of files and what directory we're grabbing this list from
+grab(file1, directory_1)
+grab(file2, directory_2)
+grab(file3, directory_3)
 
-ftp.cwd(directory_1)
-
-ftp.dir(data.append)
-
-f = open(file1, "w+")
-for _file in data:
-    if DEBUG:
-        print(_file)
-
-    f.write("%s\r\n" % _file)
-
-print("Permissions saved")
-f.close()
-
-"""
-
-ftp.cwd(directory_1)
-print("File List:")
-ftp.dir(data.append)
-
-f = open(file2, "w+")
-for _file in data:
-    print(_file)
-    f.write("%s\r\n" % _file)
-
-f.close()
-
-
-ftp.cwd("/")
-ftp.cwd(directory_2)
-print("File List:")
-ftp.dir(data.append)
-
-f = open(file3, "w+")
-for _file in data:
-    print(_file)
-    f.write("%s\r\n" % _file)
-
-f.close()
-"""
+# Then we nope out of the FTP server since we have all that we need
 ftp.quit()
 print("FTP Server exited")
 
-permissionarray = []
-with open(file1, 'r') as f:
-    for line in f:
-        if not line[0:3] == "---":
-            continue
-        else:
-            permissionarray.append(line[3:10])
-
-f.close()
-print("Storing file permissions only")
-
-os.system("rm %s" % file1)
-print("%s cleanup" % file1)
-
-f = open(bin1, "w+")
-for i in permissionarray:
-    tempbin = ""
-
-    for j in i:
-        if j == '-':
-            tempbin += '0'
-        else:
-            tempbin += '1'
-
-    if DEBUG:
-        print(tempbin)
-
-    f.write(tempbin)
-
-f.close()
-print("Permissions decoded to binary")
+# Now that we have the list of files, let's store the permissions and then convert them to binary
+# To do that, we pass in the file we're reading from, the binary text file we're making, and the binary tag
+storeAndConvert(file1, bin1, 7)
+storeAndConvert(file2, bin2, 7)
+storeAndConvert(file3, bin3, 10)
 
 os.chdir("../Python/Cyber Storm Assignments")
 os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin1)
-
+os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin2)
+os.system("python Binary\ Decoder.py < ../../FTP/%s" % bin3)
 
 """
 Website references
