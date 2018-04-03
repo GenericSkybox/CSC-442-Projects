@@ -9,8 +9,12 @@
 import sys
 
 # START #
-# grab the data from the file and determine the length of the binary number
+# grab the data from the file, strip it of unnecessary characters, and determine the length of the binary number
 data = sys.stdin.read()
+data = data.replace('\r\n', '')
+data = data.replace('\r', '')
+data = data.replace('\n', '')
+data = data.replace(' ', '')
 datalen = len(data)
 
 # DEBUG: print the data we just collected and its length
@@ -34,9 +38,15 @@ if datalen % 8 == 0 and datalen % 7 == 0:
         # we grab the first 8 characters of the data string and convert that binary bit into an integer
         bchar = tempdata[:8]
         bint = int(bchar, 2)
-        # then we convert the integer into a character and append it to our list of characters
+        # then we convert the integer into a character
         character = chr(bint)
-        charlist.append(character)
+
+        # if the character is a backspace, then truncate the list by 1
+        if character == '\b':
+            charlist = charlist[:-1]
+        # otherwise, append it to our list of characters
+        else:
+            charlist.append(character)
 
         # DEBUG:
         # print(character)
@@ -57,7 +67,11 @@ if datalen % 8 == 0 and datalen % 7 == 0:
         bchar = tempdata[:7]
         bint = int(bchar, 2)
         character = chr(bint)
-        charlist.append(character)
+
+        if character == '\b':
+            charlist = charlist[:-1]
+        else:
+            charlist.append(character)
 
         # DEBUG:
         # print(character)
@@ -75,7 +89,11 @@ elif datalen % 8 == 0:
         bchar = tempdata[:8]
         bint = int(bchar, 2)
         character = chr(bint)
-        charlist.append(character)
+
+        if character == '\b':
+            charlist = charlist[:-1]
+        else:
+            charlist.append(character)
 
         # DEBUG:
         # print(character)
@@ -93,7 +111,11 @@ elif datalen % 7 == 0:
         bchar = tempdata[:7]
         bint = int(bchar, 2)
         character = chr(bint)
-        charlist.append(character)
+
+        if character == '\b':
+            charlist = charlist[:-1]
+        else:
+            charlist.append(character)
 
         # DEBUG:
         # print(character)
