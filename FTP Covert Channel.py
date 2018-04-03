@@ -11,7 +11,6 @@
 import os
 from ftplib import FTP
 
-# Debug mode initialized to false
 DEBUG = False
 
 # Initialize the ip address, username, and password for the FTP server
@@ -19,7 +18,7 @@ ip = "jeangourd.com"
 username = "anonymous"
 password = ""
 # Also initialize where we want to store the binary (on our system) once we grab it from the server
-folder_path = "/../../mnt/c/Users/erico/Desktop/FTP"
+folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
 
 # Here are some file names that we'll use to distinguish between all of the folders we're sifting through on the server
 # File1-3 is for initially storing the permissions, while bin1-3 is for the actual binary
@@ -161,8 +160,8 @@ def storeAndConvert(filename, binname, bintag):
 # START #
 print("Welcome to Pride's FTP permission decoder")
 # First we're going to change our folder to a directory to store our files we're going to create
-os.chdir(folder_path)
-print("Folder navigated")
+#os.chdir(folder_path)
+#print("Folder navigated")
 # Now we're going to login to the FTP server, using the ip, username, and password previously initialized
 ftp = FTP(ip)
 ftp.login(username, password)
@@ -184,11 +183,104 @@ storeAndConvert(file1, bin1, 7)
 storeAndConvert(file2, bin2, 7)
 storeAndConvert(file3, bin3, 10)
 
+
+# This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
+# binary (i.e. "n")
+def translate(tempdata, n):
+    # First define a list of characters that will later be concatenated together to form a sentence
+    charlist = []
+
+    # Although there's better ways to do it, we just need a loop that continues until the data string is empty
+    while True:
+        # We grab the first n (bit-type) characters of the data string, convert that binary bit into an integer, then
+        # convert that integer into a character
+        bchar = tempdata[:n]
+        bint = int(bchar, 2)
+        character = chr(bint)
+
+        # If the character is a backspace, then truncate the list by 1
+        if character == '\b':
+            charlist = charlist[:-1]
+        # Otherwise, append it to our list of characters
+        else:
+            charlist.append(character)
+
+        if DEBUG:
+            print(character)
+
+        # If there's more than n (bit-type) characters left in the data string, we "cut off" the first n characters of
+        # the string and store the rest
+        if (len(tempdata) > n):
+            tempdata = tempdata[n:]
+        # Else, we've gone through the entire string
+        else:
+            break
+
+    # Once we have our character list, we concatenate all of our characters into one string and print it
+    finalstring = ''.join(charlist)
+    print(finalstring)
+
+binlist = [bin1, bin2, bin3]
+for i in range(len(binlist)):
+    # START #
+    # Grab the data from the file, strip it of unnecessary characters, and determine the length of the binary number left
+    file = open(binlist[i], "r")
+    data = file.read()
+    file.close()
+
+    data = data.replace('\r\n', '')
+    data = data.replace('\r', '')
+    data = data.replace('\n', '')
+    data = data.replace(' ', '')
+    datalen = len(data)
+
+    if DEBUG:
+        print(data)
+        print(datalen)
+
+    # If the length of the data is a multiple of 7 AND 8, then we cannot determine which bit-type of ASCII its written in.
+    # Therefore, we'll just print both and have the user read it to determine the message themselves
+    if datalen % 8 == 0 and datalen % 7 == 0:
+        if DEBUG:
+            print("Binary string can be either 7-bit or 8-bit")
+
+        # Since we don't know if the binary is 7-bit or 8-bit, we'll call translate twice with different bit-types
+        translate(data, 8)
+        translate(data, 7)
+
+    # If the data string is divisible by only 8, then the binary is 8-bit, and we will translate appropriately
+    elif datalen % 8 == 0:
+        if DEBUG:
+            print("Binary string is 8-bit")
+
+        translate(data, 8)
+
+    # If the data string is divisible by only 7, then the binary is 7-bit, and we will translate appropriately
+    elif datalen % 7 == 0:
+        if DEBUG:
+            print("Binary string is 7-bit")
+
+        translate(data, 7)
+
+    # Otherwise, the string is a combination of both... so error
+    else:
+        if DEBUG:
+            print("Binary string is a combination of 7-bit and 8-bit")
+
+        print("Error: multi-bit binary detected")
+        exit()
+
+"""
 # Lastly, we're going to move back to where the Binary Decoder is stored and run it on our three binary text files
-os.chdir("../My Programs/Python/Cyber Storm Projects")
-os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin1)
-os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin2)
-os.system("python Binary\ Decoder.py < ../../../FTP/%s" % bin3)
+#os.chdir("../Python/Cyber Storm Assignments")
+os.system("python Binary\ Decoder.py < %s" % bin1)
+os.system("python Binary\ Decoder.py < %s" % bin2)
+os.system("python Binary\ Decoder.py < %s" % bin3)
+"""
+
+os.system("rm %s" % bin1)
+os.system("rm %s" % bin2)
+os.system("rm %s" % bin3)
 
 """
 Website references
