@@ -9,6 +9,7 @@
 
 # import os for system commands on our system and ftplib for actually accessing the FTP server
 import os
+import ftplib
 from ftplib import FTP
 
 DEBUG = False
@@ -18,194 +19,10 @@ ip = "jeangourd.com"
 username = "anonymous"
 password = ""
 
-# Here are some file names that we'll use to distinguish between all of the folders we're sifting through on the server
-# File1-3 is for initially storing the permissions, while bin1-3 is for the actual binary
-file1 = "main.txt"
-file2 = "seven.txt"
-file3 = "ten.txt"
-bin1 = "binary_main.txt"
-bin2 = "binary_seven.txt"
-bin3 = "binary_ten.txt"
-
 # These are the directory names on the FTP server where we need to grab the file permissions
 directory_1 = "/"
-directory_2 = "7"
-directory_3 = "10"
-
-# Lastly, we declare an array of data, which is where we'll initially store the file permissions from each directory...
-data = []
-# ... and an array of permissions which we'll grab from each line from a list of files
-permissions = []
-
-# This function is used to grab a list of files from a given directory on the FTP and save it to a file on your system
-def grab(filename, directory):
-    # Before we start, let's reset the data array just in case...
-    data = []
-    # We should probably reset what directory we're in before we move to a different one...
-    ftp.cwd("/")
-
-    # Then we navigate to the directory from which we wanna grab the list of files from, and then we add it to data list
-    ftp.cwd(directory)
-    ftp.dir(data.append)
-
-    # If we're in debug, show that we're about to print the list of files
-    if DEBUG:
-        print("File List:")
-
-    # Now that we have the list of files, we're going to add each string representation of the file we grabbed to a text
-    # file on our system
-
-    # To do this, we're going to write to a new (or existing) file on our system each file in our data array
-    f = open(filename, "w+")
-
-    # NEW
-    list_of_files = []
-
-    for _file in data:
-        # If we're in debug, print each file as we save it
-        if DEBUG:
-            print(_file)
-
-        # NEW
-        list_of_files.append(_file[0:10])
-
-        # Also, we can't just add each file string straight up. We need to add some line endings to the end
-        f.write("%s\r\n" % _file)
-
-    # NEW
-    #print(list_of_files)
-
-    # Then we close the file
-    print("List of files saved")
-    f.close()
-
-    # NEW
-    return list_of_files
-
-# This function grabs the list of files that we have saved and stores just the file permissions based on the bintag
-# Once they're stored, we'll go ahead and convert them to binary and save it to binary name file
-def storeAndConvert(list_of_files, filename, binname, bintag):
-    # Before we start, let's reset the permission array just in case...
-    permissions = []
-    # NEW
-    perm_list = []
-    # Let's re-open the file where we stored the list of files from the FTP server, but this time we read each line
-    with open(filename, 'r') as f:
-        # So we read each line from the file...
-        for line in f:
-            # ... and if the binary tag is 7, then we ignore files that start don't start with --- in the permissions
-            if bintag == 7:
-                if not line[0:3] == "---":
-                    continue
-                else:
-                    # Also we save just the permissions we care about
-                    permissions.append(line[3:10])
-            # Otherwise, go ahead and add the whole permission line
-            else:
-                permissions.append(line[0:10])
-
-    for line in range(len(list_of_files)):
-        if bintag == 7:
-            if not line[0:3] == "---":
-                continue
-            else:
-                perm_list.append(line[3:10])
-        else:
-            perm_list.append(line[0:10])
-
-    print(perm_list)
-
-    # Once we're done storing permissions to the permission array, go ahead and close the file we were working in
-    f.close()
-    print("Storing file permissions only")
-
-    # Go ahead and delete that file since we won't need it anymore
-    os.system("rm %s" % filename)
-    print("%s cleanup" % filename)
-
-    # Now we're going to open up a new file to store our binary in
-    f = open(binname, "w+")
-    for i in permissions:
-        # We set up a temporary binary string, which we'll add to and eventually write to the file
-        tempbin = ""
-
-        # For every character in each line, we check to see if it's a - or a letter
-        for j in i:
-            if j == '-':
-                # If it's a dash, then the binary is 0
-                tempbin += '0'
-            else:
-                # Otherwise, it's a 1
-                tempbin += '1'
-
-        # Once we're done with each line, we can print out the binary string
-        if DEBUG:
-            print(tempbin)
-
-        # Lastly, we write the binary string to the file
-        f.write(tempbin)
-
-    # If the binary tag is 10, we need to trim off some extra binary bits off of the end of our binary string
-    if bintag == 10:
-        # Close the file we were working on and then re-open it as a read only (there's probably an easier way to do
-        # this)
-        f.close()
-        with open(binname, 'r') as f:
-            # We set the oldbinary number to the one line in the text file
-            oldbinary = f.readline()
-
-            if DEBUG:
-                print("Before cut: %i" % len(oldbinary))
-
-            # Then we set up how much we're gonna strip off of the end of the old binary - the binary string needs to be
-            # a multiple of 7
-            bincutoff = len(oldbinary) - (len(oldbinary) % 7)
-
-            if DEBUG:
-                print("Cut off: %i" % bincutoff)
-
-            # Now we create the new binary string using the old binary string and the cutoff position
-            newbinary = oldbinary[:bincutoff]
-
-            if DEBUG:
-                print("After cut: %i" % len(newbinary))
-
-        # Now we close the file and re-open it again, but this time we're writing to the file (again, there's probably
-        # an easier way to do this). Then we write the newbinary string to the file, which will overwrite the old one
-        f.close()
-        f = open(binname, "w+")
-        f.write(newbinary)
-
-    # Now that we're done, close the file
-    f.close()
-    print("Permissions decoded to binary")
-
-# START #
-print("Welcome to Pride's FTP permission decoder")
-# First we're going to change our folder to a directory to store our files we're going to create
-#os.chdir(folder_path)
-#print("Folder navigated")
-# Now we're going to login to the FTP server, using the ip, username, and password previously initialized
-ftp = FTP(ip)
-ftp.login(username, password)
-print("Login successful")
-
-# Now we actually grab the string representation of the list of files from the FTP server. We do this by passing in
-# where we want to store the list of files and what directory we're grabbing this list from
-list1 = grab(file1, directory_1)
-list2 = grab(file2, directory_2)
-list3 = grab(file3, directory_3)
-
-# Then we nope out of the FTP server since we have all that we need
-ftp.quit()
-print("FTP Server exited")
-
-# Now that we have the list of files, let's store the permissions and then convert them to binary
-# To do that, we pass in the file we're reading from, the binary text file we're making, and the binary tag
-storeAndConvert(list1, file1, bin1, 7)
-storeAndConvert(list2, file2, bin2, 7)
-storeAndConvert(list3, file3, bin3, 10)
-
+directory_2 = "/7"
+directory_3 = "/10"
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
 # binary (i.e. "n")
@@ -243,13 +60,78 @@ def translate(tempdata, n):
     finalstring = ''.join(charlist)
     print(finalstring)
 
-binlist = [bin1, bin2, bin3]
-for i in range(len(binlist)):
-    # START #
-    # Grab the data from the file, strip it of unnecessary characters, and determine the length of the binary number left
-    file = open(binlist[i], "r")
-    data = file.read()
-    file.close()
+# This function is used to grab a list of files from a given directory on the FTP and save it to a file on your system
+def grab(directory, bintag):
+    # Before we start, let's reset the data array just in case...
+    data = []
+    # We should probably reset what directory we're in before we move to a different one...
+    ftp.cwd("/")
+
+    # Then we navigate to the directory from which we wanna grab the list of files from, and then we add it to data list
+    ftp.cwd(directory)
+    ftp.dir(data.append)
+
+    # If we're in debug, show that we're about to print the list of files
+    if DEBUG:
+        print("File List:")
+
+    # NEW
+    file_string = ""
+
+    for _file in data:
+        # If we're in debug, print each file as we save it
+        if DEBUG:
+            print(_file)
+
+        # NEW
+        if bintag == 7:
+            if not _file[0:3] == "---":
+                continue
+            else:
+                file_string += _file[3:10]
+        else:
+            file_string += _file[0:10]
+
+    if DEBUG:
+        print(file_string)
+
+    # Then we close the file
+    if DEBUG:
+        print("List of files saved")
+
+    binary = ""
+
+    for char in file_string:
+        if char == "-":
+            binary += "0"
+        else:
+            binary += "1"
+
+    if bintag == 10:
+        # Close the file we were working on and then re-open it as a read only (there's probably an easier way to do
+        # this)
+        # We set the oldbinary number to the one line in the text file
+        oldbinary = binary
+
+        if DEBUG:
+            print("Before cut: %i" % len(oldbinary))
+
+        # Then we set up how much we're gonna strip off of the end of the old binary - the binary string needs to be
+        # a multiple of 7
+        bincutoff = len(oldbinary) - (len(oldbinary) % 7)
+
+        if DEBUG:
+            print("Cut off: %i" % bincutoff)
+
+        # Now we create the new binary string using the old binary string and the cutoff position
+        binary = oldbinary[:bincutoff]
+
+        if DEBUG:
+            print("After cut: %i" % len(binary))
+
+    print(binary)
+
+    data = binary
 
     data = data.replace('\r\n', '')
     data = data.replace('\r', '')
@@ -293,17 +175,29 @@ for i in range(len(binlist)):
         print("Error: multi-bit binary detected")
         exit()
 
-"""
-# Lastly, we're going to move back to where the Binary Decoder is stored and run it on our three binary text files
-#os.chdir("../Python/Cyber Storm Assignments")
-os.system("python Binary\ Decoder.py < %s" % bin1)
-os.system("python Binary\ Decoder.py < %s" % bin2)
-os.system("python Binary\ Decoder.py < %s" % bin3)
-"""
+    # NEW
+    return file_string
 
-os.system("rm %s" % bin1)
-os.system("rm %s" % bin2)
-os.system("rm %s" % bin3)
+# START #
+print("Welcome to Pride's FTP permission decoder")
+# First, we're going to login to the FTP server, using the ip, username, and password previously initialized
+try:
+    ftp = FTP(ip)
+    ftp.login(username, password)
+    print("Login successful")
+except ftplib.all_errors as e:
+    print(e)
+    exit()
+
+# Now we actually grab the string representation of the list of files from the FTP server. We do this by passing in
+# where we want to store the list of files and what directory we're grabbing this list from
+list1 = grab(directory_1, 7)
+list2 = grab(directory_2, 7)
+list3 = grab(directory_3, 10)
+
+# Then we nope out of the FTP server since we have all that we need
+ftp.quit()
+print("FTP Server exited")
 
 """
 Website references
@@ -315,4 +209,5 @@ https://docs.python.org/3/library/ftplib.html
 https://www.guru99.com/reading-and-writing-files-in-python.html
 https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
 https://stackoverflow.com/questions/3277503/how-do-i-read-a-file-line-by-line-into-a-list
+https://stackoverflow.com/questions/3169725/python-error-catching-ftp
 """
