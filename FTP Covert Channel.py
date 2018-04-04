@@ -95,10 +95,9 @@ def grab(directory, bintag):
     if DEBUG:
         print(file_string)
 
-    # Then we close the file
-    if DEBUG:
-        print("List of files saved")
+    return file_string
 
+def convert(file_string, bintag):
     binary = ""
 
     for char in file_string:
@@ -129,7 +128,8 @@ def grab(directory, bintag):
         if DEBUG:
             print("After cut: %i" % len(binary))
 
-    print(binary)
+    if DEBUG:
+        print(binary)
 
     data = binary
 
@@ -175,9 +175,6 @@ def grab(directory, bintag):
         print("Error: multi-bit binary detected")
         exit()
 
-    # NEW
-    return file_string
-
 # START #
 print("Welcome to Pride's FTP permission decoder")
 # First, we're going to login to the FTP server, using the ip, username, and password previously initialized
@@ -198,6 +195,10 @@ list3 = grab(directory_3, 10)
 # Then we nope out of the FTP server since we have all that we need
 ftp.quit()
 print("FTP Server exited")
+
+convert(list1, 7)
+convert(list2, 7)
+convert(list3, 10)
 
 """
 Website references
