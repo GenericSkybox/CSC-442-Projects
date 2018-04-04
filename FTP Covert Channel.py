@@ -7,8 +7,6 @@
 #        binary is saved to a file on our system.
 ####################################################################
 
-# import os for system commands on our system and ftplib for actually accessing the FTP server
-import os
 import ftplib
 from ftplib import FTP
 
@@ -19,10 +17,11 @@ ip = "jeangourd.com"
 username = "anonymous"
 password = ""
 
-# These are the directory names on the FTP server where we need to grab the file permissions
-directory_1 = "/"
-directory_2 = "/7"
-directory_3 = "/10"
+# Initialize a 2-D list of directories, where the first row indicates the path of the directory on the FTP server and
+# the second row defines what the bit-type of that directory is (or at least what it's expected to be)
+list_of_directories = [["/", "/7", "/10"], [7, 7, 10]]
+list_of_strings = []
+
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
 # binary (i.e. "n")
@@ -60,56 +59,24 @@ def translate(tempdata, n):
     finalstring = ''.join(charlist)
     print(finalstring)
 
-# This function is used to grab a list of files from a given directory on the FTP and save it to a file on your system
-def grab(directory, bintag):
-    # Before we start, let's reset the data array just in case...
-    data = []
-    # We should probably reset what directory we're in before we move to a different one...
-    ftp.cwd("/")
 
-    # Then we navigate to the directory from which we wanna grab the list of files from, and then we add it to data list
-    ftp.cwd(directory)
-    ftp.dir(data.append)
-
-    # If we're in debug, show that we're about to print the list of files
-    if DEBUG:
-        print("File List:")
-
-    # NEW
-    file_string = ""
-
-    for _file in data:
-        # If we're in debug, print each file as we save it
-        if DEBUG:
-            print(_file)
-
-        # NEW
-        if bintag == 7:
-            if not _file[0:3] == "---":
-                continue
-            else:
-                file_string += _file[3:10]
-        else:
-            file_string += _file[0:10]
-
-    if DEBUG:
-        print(file_string)
-
-    return file_string
-
+# This function converts a string of permissions into binary, then sends that binary to another function to be
+# translated
 def convert(file_string, bintag):
+    # We'll start by creating a blank string to add all of our binary to later
     binary = ""
 
+    # Now we'll iterate through the file string passed in. If the permission is blank (i.e. -), then we add a 0 to the
+    # binary string. Otherwise, we'll add a 1
     for char in file_string:
         if char == "-":
             binary += "0"
         else:
             binary += "1"
 
+    # If the bit-type is 10, then we need to strip any excess 0's off the end of the binary string
     if bintag == 10:
-        # Close the file we were working on and then re-open it as a read only (there's probably an easier way to do
-        # this)
-        # We set the oldbinary number to the one line in the text file
+        # Create a temp variable
         oldbinary = binary
 
         if DEBUG:
@@ -131,8 +98,10 @@ def convert(file_string, bintag):
     if DEBUG:
         print(binary)
 
+    # Now here is where we copy-paste our Binary Decoder from earlier
+    # Grab the data from the binary string, strip it of unnecessary characters (just in case), and determine the length
+    # of the binary number left
     data = binary
-
     data = data.replace('\r\n', '')
     data = data.replace('\r', '')
     data = data.replace('\n', '')
@@ -143,37 +112,61 @@ def convert(file_string, bintag):
         print(data)
         print(datalen)
 
-    # If the length of the data is a multiple of 7 AND 8, then we cannot determine which bit-type of ASCII its written in.
-    # Therefore, we'll just print both and have the user read it to determine the message themselves
-    if datalen % 8 == 0 and datalen % 7 == 0:
-        if DEBUG:
-            print("Binary string can be either 7-bit or 8-bit")
-
-        # Since we don't know if the binary is 7-bit or 8-bit, we'll call translate twice with different bit-types
-        translate(data, 8)
-        translate(data, 7)
-
-    # If the data string is divisible by only 8, then the binary is 8-bit, and we will translate appropriately
-    elif datalen % 8 == 0:
-        if DEBUG:
-            print("Binary string is 8-bit")
-
-        translate(data, 8)
-
     # If the data string is divisible by only 7, then the binary is 7-bit, and we will translate appropriately
-    elif datalen % 7 == 0:
+    if datalen % 7 == 0:
         if DEBUG:
             print("Binary string is 7-bit")
 
         translate(data, 7)
 
-    # Otherwise, the string is a combination of both... so error
+    # Otherwise, something went wrong and the binary number wasn't properly stripped
     else:
         if DEBUG:
-            print("Binary string is a combination of 7-bit and 8-bit")
+            print(data)
 
-        print("Error: multi-bit binary detected")
+        print("Error: binary string is not 7-bit")
         exit()
+
+
+# This function is used to grab a list of files from a given directory on the FTP and return the the file permissions as
+# a string
+def grab(directory, bintag):
+    # Before we start, let's reset the data array just in case...
+    data = []
+    # We should probably reset what directory we're in before we move to a different one...
+    ftp.cwd("/")
+    # We're also gonna set up a blank string so that we can easily add file permissions to it later and return it
+    file_string = ""
+
+    # Then we navigate to the directory from which we wanna grab the list of files from, and then we add it to data list
+    ftp.cwd(directory)
+    ftp.dir(data.append)
+
+    if DEBUG:
+        print("File List:")
+
+    # So now we're going to iterate through each line in the list of files in the server
+    for _file in data:
+        if DEBUG:
+            print(_file)
+
+        # For each line, we're going to add only the file permissions to the file string
+        if bintag == 7:
+            # If it's a bit-type of 7, then we ignore any files that start with d, r, or w, and save the last 7 file
+            # permissions otherwise
+            if not _file[0:3] == "---":
+                continue
+            else:
+                file_string += _file[3:10]
+        else:
+            # Else, the bit-type is ten, so we'll save the whole permission snippet
+            file_string += _file[0:10]
+
+    if DEBUG:
+        print(file_string)
+
+    return file_string
+
 
 # START #
 print("Welcome to Pride's FTP permission decoder")
@@ -181,24 +174,25 @@ print("Welcome to Pride's FTP permission decoder")
 try:
     ftp = FTP(ip)
     ftp.login(username, password)
+
     print("Login successful")
 except ftplib.all_errors as e:
     print(e)
     exit()
 
-# Now we actually grab the string representation of the list of files from the FTP server. We do this by passing in
-# where we want to store the list of files and what directory we're grabbing this list from
-list1 = grab(directory_1, 7)
-list2 = grab(directory_2, 7)
-list3 = grab(directory_3, 10)
+# Now we're going to iterate through the list of directories and grab the file permissions from each directory. We'll
+# append these to our list of strings
+for i in range(len(list_of_directories[0])):
+    list_of_strings.append(grab(list_of_directories[0][i], list_of_directories[1][i]))
 
-# Then we nope out of the FTP server since we have all that we need
+# Then we nope out of the FTP server since we have all of the file permissions
 ftp.quit()
 print("FTP Server exited")
 
-convert(list1, 7)
-convert(list2, 7)
-convert(list3, 10)
+# Lastly, we'll iterate through our list of strings to convert them to binary - this also depends on the the bit-type of
+# the directory we originally grabbed the string from
+for i in range(len(list_of_strings)):
+    convert(list_of_strings[i], list_of_directories[1][i])
 
 """
 Website references
