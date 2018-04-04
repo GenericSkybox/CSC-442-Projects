@@ -12,15 +12,11 @@ from ftplib import FTP
 
 DEBUG = False
 
-# Initialize the ip address, username, and password for the FTP server
+# Initialize the ip address, username, and password for the FTP server, along with the directory of the message
 ip = "jeangourd.com"
 username = "anonymous"
 password = ""
-
-# Initialize a 2-D list of directories, where the first row indicates the path of the directory on the FTP server and
-# the second row defines what the bit-type of that directory is (or at least what it's expected to be)
-list_of_directories = [["/", "/7", "/10"], [7, 7, 10]]
-list_of_strings = []
+directory = "/new"
 
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
@@ -169,30 +165,31 @@ def grab(directory, bintag):
 
 
 # START #
-print("Welcome to Pride's FTP permission decoder")
+if DEBUG:
+    print("Welcome to Pride's FTP permission decoder")
 # First, we're going to login to the FTP server, using the ip, username, and password previously initialized
 try:
     ftp = FTP(ip)
     ftp.login(username, password)
-
-    print("Login successful")
+    if DEBUG:
+        print("Login successful")
 except ftplib.all_errors as e:
     print(e)
     exit()
 
-# Now we're going to iterate through the list of directories and grab the file permissions from each directory. We'll
-# append these to our list of strings
-for i in range(len(list_of_directories[0])):
-    list_of_strings.append(grab(list_of_directories[0][i], list_of_directories[1][i]))
+# Now we're going to grab the file permissions from the directory two different ways - one using on the last 7
+# permissions, another using all 10 permissions
+string_seven = grab(directory, 7)
+string_ten = grab(directory, 10)
 
 # Then we nope out of the FTP server since we have all of the file permissions
 ftp.quit()
-print("FTP Server exited")
+if DEBUG:
+    print("FTP Server exited")
 
-# Lastly, we'll iterate through our list of strings to convert them to binary - this also depends on the the bit-type of
-# the directory we originally grabbed the string from
-for i in range(len(list_of_strings)):
-    convert(list_of_strings[i], list_of_directories[1][i])
+# Lastly, we'll convert both of our strings to binary - one way with 7 bit-type, another with 10 bit-type
+convert(string_seven, 7)
+convert(string_ten, 10)
 
 """
 Website references
