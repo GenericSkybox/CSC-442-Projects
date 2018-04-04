@@ -17,8 +17,6 @@ DEBUG = False
 ip = "jeangourd.com"
 username = "anonymous"
 password = ""
-# Also initialize where we want to store the binary (on our system) once we grab it from the server
-folder_path = "/../../mnt/c/Users/eortiz/Desktop/FTP"
 
 # Here are some file names that we'll use to distinguish between all of the folders we're sifting through on the server
 # File1-3 is for initially storing the permissions, while bin1-3 is for the actual binary
@@ -60,23 +58,37 @@ def grab(filename, directory):
     # To do this, we're going to write to a new (or existing) file on our system each file in our data array
     f = open(filename, "w+")
 
+    # NEW
+    list_of_files = []
+
     for _file in data:
         # If we're in debug, print each file as we save it
         if DEBUG:
             print(_file)
 
+        # NEW
+        list_of_files.append(_file[0:10])
+
         # Also, we can't just add each file string straight up. We need to add some line endings to the end
         f.write("%s\r\n" % _file)
+
+    # NEW
+    #print(list_of_files)
 
     # Then we close the file
     print("List of files saved")
     f.close()
 
+    # NEW
+    return list_of_files
+
 # This function grabs the list of files that we have saved and stores just the file permissions based on the bintag
 # Once they're stored, we'll go ahead and convert them to binary and save it to binary name file
-def storeAndConvert(filename, binname, bintag):
+def storeAndConvert(list_of_files, filename, binname, bintag):
     # Before we start, let's reset the permission array just in case...
     permissions = []
+    # NEW
+    perm_list = []
     # Let's re-open the file where we stored the list of files from the FTP server, but this time we read each line
     with open(filename, 'r') as f:
         # So we read each line from the file...
@@ -91,6 +103,17 @@ def storeAndConvert(filename, binname, bintag):
             # Otherwise, go ahead and add the whole permission line
             else:
                 permissions.append(line[0:10])
+
+    for line in range(len(list_of_files)):
+        if bintag == 7:
+            if not line[0:3] == "---":
+                continue
+            else:
+                perm_list.append(line[3:10])
+        else:
+            perm_list.append(line[0:10])
+
+    print(perm_list)
 
     # Once we're done storing permissions to the permission array, go ahead and close the file we were working in
     f.close()
@@ -169,9 +192,9 @@ print("Login successful")
 
 # Now we actually grab the string representation of the list of files from the FTP server. We do this by passing in
 # where we want to store the list of files and what directory we're grabbing this list from
-grab(file1, directory_1)
-grab(file2, directory_2)
-grab(file3, directory_3)
+list1 = grab(file1, directory_1)
+list2 = grab(file2, directory_2)
+list3 = grab(file3, directory_3)
 
 # Then we nope out of the FTP server since we have all that we need
 ftp.quit()
@@ -179,9 +202,9 @@ print("FTP Server exited")
 
 # Now that we have the list of files, let's store the permissions and then convert them to binary
 # To do that, we pass in the file we're reading from, the binary text file we're making, and the binary tag
-storeAndConvert(file1, bin1, 7)
-storeAndConvert(file2, bin2, 7)
-storeAndConvert(file3, bin3, 10)
+storeAndConvert(list1, file1, bin1, 7)
+storeAndConvert(list2, file2, bin2, 7)
+storeAndConvert(list3, file3, bin3, 10)
 
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
