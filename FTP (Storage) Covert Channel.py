@@ -1,10 +1,10 @@
 ###################################################################
-# Name:  Team Pride - Eric Ortiz, Colby Austin, Andy Kraus, Herbert Sanford, Jalen Senones, Stephen Kunz, Tony York
+# Name:  Team Pride: Eric Ortiz, Colby Austin, Andy Kraus, Herbert Sanford, Jalen Senones, Stephen Kunz, Tony York
 # Date:  4/6/18
 # Class: CSC 442 - 001
 # Desc:  This program logs into Dr. Gourd's FTP server, grabs his file permissions, translates it to binary, and then
-#        uses our existing Binary Decoder to decode the message. This program decodes the file permissions two ways:
-#        first by 7-bit, then by 10-bit
+#        uses our existing Binary Decoder to decode the message. The message is printed to the console using first
+#        7-bit and then 10-bit methods
 ####################################################################
 
 import ftplib
@@ -12,11 +12,12 @@ from ftplib import FTP
 
 DEBUG = False
 
-# Initialize the ip address, username, and password for the FTP server, along with the directory of the message
-ip = "jeangourd.com"
-username = "anonymous"
-password = ""
-directory = "/new"
+# Initialize the ip address, port, username, and password for the FTP server, along with the directory of the message
+ip = "138.47.132.200"
+port = "8008"
+username = "good"
+password = "goodGOODgood"
+directory = "/.lookee-here/now-in-here"
 
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
@@ -167,9 +168,10 @@ def grab(directory, bintag):
 # START #
 if DEBUG:
     print("Welcome to Pride's FTP permission decoder")
-# First, we're going to login to the FTP server, using the ip, username, and password previously initialized
+# First, we're going to connect and login to the FTP server, using the ip, username, and password previously initialized
 try:
-    ftp = FTP(ip)
+    ftp = FTP()
+    ftp.connect(ip, port)
     ftp.login(username, password)
     if DEBUG:
         print("Login successful")
@@ -202,4 +204,5 @@ https://www.guru99.com/reading-and-writing-files-in-python.html
 https://stackoverflow.com/questions/111954/using-pythons-ftplib-to-get-a-directory-listing-portably
 https://stackoverflow.com/questions/3277503/how-do-i-read-a-file-line-by-line-into-a-list
 https://stackoverflow.com/questions/3169725/python-error-catching-ftp
+https://stackoverflow.com/questions/17204276/python-ftplib-specify-port
 """
