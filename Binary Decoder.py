@@ -60,6 +60,11 @@ if DEBUG:
     print(data)
     print(datalen)
 
+# If we don't have any binary numbers to convert, error and exit
+if data == "":
+    print("Error: Binary string empty.")
+    exit()
+
 # If the length of the data is a multiple of 7 AND 8, then we cannot determine which bit-type of ASCII its written in.
 # Therefore, we'll just print both and have the user read it to determine the message themselves
 if datalen % 8 == 0 and datalen % 7 == 0:

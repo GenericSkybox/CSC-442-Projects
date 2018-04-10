@@ -13,11 +13,11 @@ from ftplib import FTP
 DEBUG = False
 
 # Initialize the ip address, port, username, and password for the FTP server, along with the directory of the message
-ip = "138.47.132.200"
-port = "8008"
-username = "good"
-password = "goodGOODgood"
-directory = "/.lookee-here/now-in-here"
+ip = "jeangourd.com"
+port = "21"
+username = "anonymous"
+password = ""
+directory = "/10"
 
 
 # This function converts a string of binary (i.e. "tempdata") into an actual string, depending on the bit-type of the
@@ -108,6 +108,11 @@ def convert(file_string, bintag):
     if DEBUG:
         print(data)
         print(datalen)
+
+    # If we don't have any binary numbers to convert, error and exit
+    if data == "":
+        print("Error: Binary string empty.")
+        exit()
 
     # If the data string is divisible by only 7, then the binary is 7-bit, and we will translate appropriately
     if datalen % 7 == 0:
